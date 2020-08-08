@@ -19,5 +19,10 @@ public class BudgetService {
 
         return budget.orElseThrow(() -> new NotFoundException(String.format("No budget found for year: %s", year)));
     }
+
+    public void deleteBudget(Integer year) {
+        Budget budget = getBudget(year);
+        budgetRepository.delete(budget);
+    }
 }
 
