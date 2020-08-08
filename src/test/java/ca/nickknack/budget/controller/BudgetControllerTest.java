@@ -35,6 +35,8 @@ public class BudgetControllerTest {
     private TestRestTemplate restTemplate;
 
     private static final Integer TEST_YEAR = 2020;
+    private static final Integer TEST_YEAR_2 = 2021;
+    private static final Integer TEST_YEAR_3 = 2022;
     private static final BigDecimal TEST_EXPECTED_TOTAL = new BigDecimal("40000");
 
     private static final Integer INVALID_YEAR = 1000;
@@ -61,6 +63,32 @@ public class BudgetControllerTest {
 
         assertAll(
                 () -> assertEquals(TEST_YEAR, result.getYear(), "year"),
+                () -> assertThat("expected total", TEST_EXPECTED_TOTAL, comparesEqualTo(result.getExpectedTotal()))
+        );
+    }
+
+    @Test
+    public void testFindBudgetByYearMultipleBudgets_shouldReturnExpectedBudget() {
+        String uri = String.format("http://localhost:%s/api/v1/budget/%s", port, TEST_YEAR_2);
+
+        Budget testBudget1 = getNewValidBudget();
+        Budget testBudget2 = getNewValidBudget().setYear(TEST_YEAR_2);
+        Budget testBudget3 = getNewValidBudget().setYear(TEST_YEAR_3);
+
+        budgetRepository.save(testBudget1);
+        budgetRepository.save(testBudget2);
+        budgetRepository.save(testBudget3);
+
+        ResponseEntity<BudgetDto> response = restTemplate.getForEntity(uri, BudgetDto.class);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        BudgetDto result = response.getBody();
+
+        assertNotNull(result);
+
+        assertAll(
+                () -> assertEquals(TEST_YEAR_2, result.getYear(), "year"),
                 () -> assertThat("expected total", TEST_EXPECTED_TOTAL, comparesEqualTo(result.getExpectedTotal()))
         );
     }
