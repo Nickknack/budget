@@ -3,6 +3,7 @@ package ca.nickknack.budget.controller;
 import ca.nickknack.budget.dto.BudgetDto;
 import ca.nickknack.budget.entity.Budget;
 import ca.nickknack.budget.repository.BudgetRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -35,9 +37,16 @@ public class BudgetControllerTest {
     private static final Integer TEST_YEAR = 2020;
     private static final BigDecimal TEST_EXPECTED_TOTAL = new BigDecimal("40000");
 
+    private static final Integer INVALID_YEAR = 1000;
+
+    @BeforeEach
+    public void clearData() {
+        budgetRepository.deleteAll();
+    }
+
     @Test
     public void testFindBudgetByYear_shouldReturnExpectedBudget() {
-        String uri = String.format("http://localhost:%s/api/v1/budget?year=%s", port, TEST_YEAR);
+        String uri = String.format("http://localhost:%s/api/v1/budget/%s", port, TEST_YEAR);
 
         Budget testBudget = getNewValidBudget();
         budgetRepository.save(testBudget);
@@ -54,6 +63,18 @@ public class BudgetControllerTest {
                 () -> assertEquals(TEST_YEAR, result.getYear(), "year"),
                 () -> assertThat("expected total", TEST_EXPECTED_TOTAL, comparesEqualTo(result.getExpectedTotal()))
         );
+    }
+
+    @Test
+    public void testFindBudgetByInvalidYear_shouldReturnNotFoundStatus() {
+        String uri = String.format("http://localhost:%s/api/v1/budget/%s", port, INVALID_YEAR);
+
+        Budget testBudget = getNewValidBudget();
+        budgetRepository.save(testBudget);
+
+        ResponseEntity<BudgetDto> response = restTemplate.getForEntity(uri, BudgetDto.class);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     private Budget getNewValidBudget() {

@@ -5,8 +5,8 @@ import ca.nickknack.budget.dto.BudgetDto;
 import ca.nickknack.budget.transformer.BudgetTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -16,8 +16,8 @@ public class BudgetController {
     @Autowired
     private BudgetService budgetService;
 
-    @GetMapping("")
-    public BudgetDto findBudget(@RequestParam(name = "year") Integer year) {
-        return BudgetTransformer.toBudgetDto(budgetService.findBudget(year));
+    @GetMapping("/{year}")
+    public BudgetDto getBudget(@PathVariable(name = "year") Integer year) {
+        return BudgetTransformer.toBudgetDto(budgetService.getBudget(year));
     }
 }
