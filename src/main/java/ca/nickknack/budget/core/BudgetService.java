@@ -1,5 +1,6 @@
 package ca.nickknack.budget.core;
 
+import ca.nickknack.budget.dto.BudgetDto;
 import ca.nickknack.budget.entity.Budget;
 import ca.nickknack.budget.exception.NotFoundException;
 import ca.nickknack.budget.repository.BudgetRepository;
@@ -15,14 +16,27 @@ public class BudgetService {
     private BudgetRepository budgetRepository;
 
     public Budget getBudget(Integer year) {
-        Optional<Budget> budget = Optional.ofNullable(budgetRepository.findBudgetByYear(year));
+        Optional<Budget> budget = findBudgetByYear(year);
 
         return budget.orElseThrow(() -> new NotFoundException(String.format("No budget found for year: %s", year)));
     }
 
+    public Budget updateBudget(Integer year, BudgetDto budgetDto) {
+        Optional<Budget> budget = findBudgetByYear(year);
+
+        return budgetRepository.save(budget.orElse(Budget.newInstance())
+                .setYear(budgetDto.getYear())
+                .setExpectedTotal(budgetDto.getExpectedTotal()));
+    }
+
     public void deleteBudget(Integer year) {
-        Budget budget = getBudget(year);
-        budgetRepository.delete(budget);
+        Optional<Budget> budget = findBudgetByYear(year);
+
+        budget.ifPresent(value -> budgetRepository.delete(value));
+    }
+
+    private Optional<Budget> findBudgetByYear(Integer year) {
+        return Optional.ofNullable(budgetRepository.findBudgetByYear(year));
     }
 }
 
