@@ -8,5 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface BudgetRepository extends JpaRepository<Budget, UUID> {
-    Budget findBudgetByYear(Integer year);
+    Boolean existsByYear(Integer year);
 }
